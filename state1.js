@@ -14,9 +14,9 @@ demo.state1.prototype = {
     preload: function(){
         
         //load images 
-        game.load.spritesheet('zombie','spritesheets/zombiesheet.png',146,161);
-        game.load.image('grass','backgrounds/grass.jpg');
-        game.load.image('player','sprites/player.png');
+        game.load.spritesheet('zombie','assets/spritesheets/zombiesheet.png',156,171);
+        game.load.image('grass','assets/backgrounds/grass.jpg');
+        game.load.image('player','assets/sprites/player.png');
     }, 
     create: function(){
         
