@@ -33,7 +33,7 @@ demo.state1.prototype = {
         // intro music
         intro = game.add.audio('intro', 0.5, true); // 50% volume, loop
         // TODO uncomment next line to play
-        // intro.play();
+        intro.play();
 
         // background
         // TODO change to tilemap
