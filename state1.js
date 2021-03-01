@@ -4,9 +4,10 @@ var centerX = 1500/2;
 var centerY = 1000/2;
 var speed = 6;
 var accel = 500;
-var zombie;
 var score = 0; 
 var i = 0;
+// define vars with no initial values here
+var zombie, intro;
 
 
 demo.state1 = function(){};
@@ -17,6 +18,7 @@ demo.state1.prototype = {
         game.load.spritesheet('zombie','assets/spritesheets/zombiesheet.png',156,171);
         game.load.image('grass','assets/backgrounds/grass.jpg');
         game.load.image('player','assets/sprites/player.png');
+        game.load.audio('intro', 'assets/audios/introMusic.mp3');
     }, 
     create: function(){
         
@@ -28,11 +30,16 @@ demo.state1.prototype = {
         
         //allows game screen to scale 
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-        
+
+        // loop intro music
+        intro = game.add.audio('intro', 0.5, true); // 50% volume, loop
+        // uncomment next line to play
+        // intro.play();
+
         //add farm background
         var farm = game.add.sprite(0,0,'grass');
-        farm.width = 1500
-        farm.height = 1000
+        farm.width = 1500;
+        farm.height = 1000;
         
         //add zombie sprite and animate it
         zombie = game.add.sprite(750,500,'zombie');
@@ -44,7 +51,6 @@ demo.state1.prototype = {
         //make sure zombie is drawn from middle 
         zombie.anchor.x = 0.5;
         zombie.anchor.y = 0.5;
-        
         
         //enable physics for zombie and coin group
         game.physics.enable([zombie]);
@@ -58,7 +64,7 @@ demo.state1.prototype = {
         
         //set deadzone
         game.camera.deadzone = new Phaser.Rectangle(centerX-200,0,600,1000);
-        
+
     }, 
     update: function(){
         
