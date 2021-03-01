@@ -8,7 +8,7 @@ var bulletVelocity = 1000;
 var nextFire = 0;
 var fireRate = 200;
 // define vars with no initial values here
-var zombieGroup, player, bullets, intro, zombiesLeft;
+var zombieGroup, player, bullets, intro, zombiesLeft, zomb;
 var cursors, cursorsAlt, replay, tip;
 
 demo.state1 = function(){};
@@ -20,7 +20,8 @@ demo.state1.prototype = {
         game.load.image('bullet','assets/sprites/bullet.png');
         game.load.image('replay', 'assets/buttons/replay.png');
         game.load.audio('intro', 'assets/audios/introMusic.mp3');
-
+        game.load.spritesheet('zomb','assets/spritesheets/zombiesheet.png',156,171);
+        
         replay = null;
         zombiesLeft = 0;
     }, 
@@ -49,6 +50,11 @@ demo.state1.prototype = {
         bullets.setAll('scale.x', 1)
         bullets.setAll('scale.y', 1)
         
+        //add animation zombie sprite and animate it
+        zomb = game.add.sprite(0,100,'zomb');
+        zomb.scale.setTo(.3,.3);
+        zomb.animations.add('run',[0,1,2,3]);
+
         // player: spawn randomly
         player = game.add.sprite(
             Math.random() * 1500,
@@ -119,8 +125,12 @@ demo.state1.prototype = {
 
         if (cursors.left.isDown || game.input.keyboard.isDown(cursorsAlt.left)){
             player.body.velocity.x = -playerVelocity;
+            //game.physics.arcade.moveToObject(zomb,player,40,1000);
+            zomb.animations.play('run',20,true);
         } else if (cursors.right.isDown || game.input.keyboard.isDown(cursorsAlt.right)){
             player.body.velocity.x = playerVelocity;
+            //game.physics.arcade.moveToObject(zomb,player,40,1000);
+            zomb.animations.play('run',20,true);
         } else {
             player.body.velocity.x = 0;
         }
