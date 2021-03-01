@@ -32,7 +32,7 @@ demo.state1.prototype = {
         //add farm background
         var farm = game.add.sprite(0,0,'grass');
         farm.width = 1500
-        farm.heigth = 1000
+        farm.height = 1000
         
         //add zombie sprite and animate it
         zombie = game.add.sprite(750,500,'zombie');
