@@ -1,105 +1,119 @@
-
 var demo = {};
 var centerX = 1500/2;
 var centerY = 1000/2;
-var speed = 6;
-var accel = 500;
 var score = 0; 
 var i = 0;
+var playerVelocity = 300;
+var bulletVelocity = 1000;
+// fire
+var nextFire = 0;
+var fireRate = 200;
 // define vars with no initial values here
-var zombie, intro;
-
+var zombieGroup, player, bullets, intro, cursors, cursorsAlt;
 
 demo.state1 = function(){};
 demo.state1.prototype = {
     preload: function(){
-        
-        //load images 
-        game.load.spritesheet('zombie','assets/spritesheets/zombiesheet.png',156,171);
+        game.load.spritesheet('zombie','assets/sprites/zombie.png',156,171);
         game.load.image('grass','assets/backgrounds/grass.jpg');
         game.load.image('player','assets/sprites/player.png');
+        game.load.image('bullet','assets/sprites/bullet.png');
         game.load.audio('intro', 'assets/audios/introMusic.mp3');
     }, 
     create: function(){
-        
-        //anytime you use physics in a game you need this
         game.physics.startSystem(Phaser.Physics.ARCADE);
-        
-        //set bounds for camera follow
         game.world.setBounds(0,0,1000,1000);
-        
-        //allows game screen to scale 
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 
-        // loop intro music
+        // intro music
         intro = game.add.audio('intro', 0.5, true); // 50% volume, loop
-        // uncomment next line to play
+        // TODO uncomment next line to play
         // intro.play();
 
-        //add farm background
+        // background
+        // TODO change to tilemap
         var farm = game.add.sprite(0,0,'grass');
         farm.width = 1500;
         farm.height = 1000;
-        
-        //add zombie sprite and animate it
-        zombie = game.add.sprite(750,500,'zombie');
-        zombie.animations.add('run',[0,1,2,3]);
 
-        //add player sprite
-        player = game.add.sprite(750,200,'player');
+        bullets = game.add.group()
+        bullets.createMultiple(50, 'bullet')
+        bullets.setAll('checkWorldBounds', true)
+        bullets.setAll('outOfBoundsKill', true)
+        bullets.setAll('anchor.x', 0.5)
+        bullets.setAll('anchor.y', 0.5)
+        bullets.setAll('scale.x', 1)
+        bullets.setAll('scale.y', 1)
         
-        //make sure zombie is drawn from middle 
-        zombie.anchor.x = 0.5;
-        zombie.anchor.y = 0.5;
+        // player: spawn randomly
+        player = game.add.sprite(
+            Math.random() * 1500,
+            Math.random() * 1000,
+            'player'
+        );
+        player.anchor.setTo(0.5, 0.5);
+        player.enableBody = true;
         
-        //enable physics for zombie and coin group
-        game.physics.enable([zombie]);
+        // zombies: spawn 10 randomly
+        zombieGroup = game.add.group();
+        for (var i = 0; i < 10; i++) {
+            zombieGroup.create(
+                Math.random() * 1500,
+                Math.random() * 1000,
+                'zombie'
+            );
+        }
+        zombieGroup.setAll('anchor.y', 0.5);
+        zombieGroup.setAll('anchor.x', 0.5);
         
-        //make it so zombie is brought down by the impact of gravity and bounces on impact
-        zombie.body.drag.x = 400;
-        zombie.body.collideWorldBounds = true;
-        
-        //follow zombie sprite with camera
-        game.camera.follow(zombie);
-        
-        //set deadzone
-        game.camera.deadzone = new Phaser.Rectangle(centerX-200,0,600,1000);
+        // physics
+        game.physics.enable([zombieGroup, player, bullets]);
+        player.body.collideWorldBounds = true;
+        zombieGroup.setAll('body.collideWorldBounds', true);
 
+        // controls
+        cursors = game.input.keyboard.createCursorKeys();
+        cursorsAlt = {
+            up: Phaser.KeyCode.W,
+            left: Phaser.KeyCode.A,
+            down: Phaser.KeyCode.S,
+            right: Phaser.KeyCode.D,
+        }
     }, 
     update: function(){
-        
-        //when right key is clicked, zombie turns to the right and moves forward by a given speed at the given acceleration
-        if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
-            zombie.scale.setTo(1,1);
-            zombie.x += speed;
-            zombie.body.acceleration.x = accel;
-            zombie.animations.play('run',20,true);
+        if (game.input.activePointer.isDown) {
+            this.fire()
         }
-        //when left key is clicked, zombie turns to the left and moves at a given speed at the given acceleration
-        else if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
-            zombie.scale.setTo(-1,1);
-            zombie.x -= speed;
-            zombie.body.acceleration.x = -accel;
-            zombie.animations.play('run',20,true);
-        }
-        //if keys are not pressed, zombie stops running and returns to first frame
-        else{
-            zombie.animations.stop('run');
-            zombie.frame = 0;
-        }
-        //up key makes zombie jump
-        if (game.input.keyboard.isDown(Phaser.Keyboard.UP)){
-            zombie.y -= speed;
-            zombie.body.velocity.x = 100;
-        }
-        if (game.input.keyboard.isDown(Phaser.Keyboard.DOWN)){
-            zombie.y += speed;
-            zombie.body.velocity.x = 100;
-        }
-        else{
-            zombie.body.acceleration.x = 0;
-        }
-        
-    } 
-};
 
+        player.rotation = game.physics.arcade.angleToPointer(player) + Math.PI / 4
+        game.physics.arcade.overlap(player, zombieGroup, function(p, z) { p.kill(); })
+        game.physics.arcade.overlap(bullets, zombieGroup, function(b, z) { b.kill(); z.kill(); })
+
+        // control player movements
+        if (cursors.up.isDown || game.input.keyboard.isDown(cursorsAlt.up)){
+            player.body.velocity.y = -playerVelocity;
+        } else if (cursors.down.isDown || game.input.keyboard.isDown(cursorsAlt.down)) {
+            player.body.velocity.y = playerVelocity;
+        } else {
+            player.body.velocity.y = 0;
+        }
+
+        if (cursors.left.isDown || game.input.keyboard.isDown(cursorsAlt.left)){
+            player.body.velocity.x = -playerVelocity;
+        } else if (cursors.right.isDown || game.input.keyboard.isDown(cursorsAlt.right)){
+            player.body.velocity.x = playerVelocity;
+        } else {
+            player.body.velocity.x = 0;
+        }
+    },
+    fire: function() {
+        if (game.time.now > nextFire) {
+            nextFire = game.time.now + fireRate
+            var bullet = bullets.getFirstDead()
+            bullet.reset(player.x, player.y)
+
+            game.physics.arcade.moveToPointer(bullet, bulletVelocity)
+            bullet.rotation = game.physics.arcade.angleToPointer(bullet)
+        }
+    }
+};
