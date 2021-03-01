@@ -1,24 +1,28 @@
 var demo = {};
 var centerX = 1500/2;
 var centerY = 1000/2;
-var score = 0; 
-var i = 0;
+// velocity
 var playerVelocity = 300;
 var bulletVelocity = 1000;
-// fire
+// fire rate control
 var nextFire = 0;
 var fireRate = 200;
 // define vars with no initial values here
-var zombieGroup, player, bullets, intro, cursors, cursorsAlt;
+var zombieGroup, player, bullets, intro, zombiesLeft;
+var cursors, cursorsAlt, replay, tip;
 
 demo.state1 = function(){};
 demo.state1.prototype = {
     preload: function(){
-        game.load.spritesheet('zombie','assets/sprites/zombie.png',156,171);
+        game.load.image('zombie','assets/sprites/zombie.png');
         game.load.image('grass','assets/backgrounds/grass.jpg');
         game.load.image('player','assets/sprites/player.png');
         game.load.image('bullet','assets/sprites/bullet.png');
+        game.load.image('replay', 'assets/buttons/replay.png');
         game.load.audio('intro', 'assets/audios/introMusic.mp3');
+
+        replay = null;
+        zombiesLeft = 0;
     }, 
     create: function(){
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -62,10 +66,18 @@ demo.state1.prototype = {
                 Math.random() * 1000,
                 'zombie'
             );
+            zombiesLeft += 1;
         }
         zombieGroup.setAll('anchor.y', 0.5);
         zombieGroup.setAll('anchor.x', 0.5);
         
+        // tip
+        tip = game.add.text(200, 100, '', {
+            font: 'Arial',
+            fontSize: 32,
+        })
+        tip.anchor.setTo(0, 0.5)
+
         // physics
         game.physics.enable([zombieGroup, player, bullets]);
         player.body.collideWorldBounds = true;
@@ -81,13 +93,20 @@ demo.state1.prototype = {
         }
     }, 
     update: function(){
-        if (game.input.activePointer.isDown) {
+        // fire
+        if (player.alive && game.input.activePointer.isDown) {
             this.fire()
         }
 
         player.rotation = game.physics.arcade.angleToPointer(player) + Math.PI / 4
+
+        // kill of player or zombies
         game.physics.arcade.overlap(player, zombieGroup, function(p, z) { p.kill(); })
-        game.physics.arcade.overlap(bullets, zombieGroup, function(b, z) { b.kill(); z.kill(); })
+        game.physics.arcade.overlap(bullets, zombieGroup, function(b, z) {
+            b.kill();
+            z.kill();
+            zombiesLeft -= 1;
+        })
 
         // control player movements
         if (cursors.up.isDown || game.input.keyboard.isDown(cursorsAlt.up)){
@@ -104,6 +123,20 @@ demo.state1.prototype = {
             player.body.velocity.x = playerVelocity;
         } else {
             player.body.velocity.x = 0;
+        }
+
+        // replay button: show when all zombies are killed
+        if ((zombiesLeft === 0 || !player.alive) && !replay) {
+            replay = game.add.button(150, 100, 'replay', function() {
+                game.state.start('state1')
+            })
+            replay.anchor.setTo(0.5, 0.5)
+            replay.scale.setTo(2, 2)
+            replay.onInputDown.add(tint, replay)
+            replay.onInputUp.add(untint, replay)
+
+            if (zombiesLeft === 0) tip.text = 'You killed all zombies.'
+            if (!player.alive) tip.text = 'You\'re dead.'
         }
     },
     fire: function() {
