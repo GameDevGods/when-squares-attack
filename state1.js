@@ -42,17 +42,22 @@ demo.state1.prototype = {
 
         // background
         //TODO change to tilemap
+        /*
         var farm = game.add.sprite(0,0,'grass');
         farm.width = 1500;
         farm.height = 1000;
-
-        /*
+        */
+    
         var map = game.add.tilemap('state1map');
-        map.addTilesetImage('Grass','grassTile');
+        map.addTilesetImage('grassTile');
+        map.addTilesetImage('bushTile');
+        map.addTilesetImage('pondTile');
 
         layer = map.createLayer('Grass');
+        layer = map.createLayer('Bushes');
+        layer = map.createLayer('Ponds');
         layer.resizeWorld();
-        */
+
         bullets = game.add.group()
         bullets.createMultiple(50, 'bullet')
         bullets.setAll('checkWorldBounds', true)
