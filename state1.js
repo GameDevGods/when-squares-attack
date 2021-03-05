@@ -38,14 +38,14 @@ demo.state1.prototype = {
         // intro music
         intro = game.add.audio('intro', 0.5, true); // 50% volume, loop
         // TODO uncomment next line to play
-        intro.play();
+        //intro.play();
 
         // background
         //TODO change to tilemap
         var farm = game.add.sprite(0,0,'grass');
         farm.width = 1500;
         farm.height = 1000;
-        
+
         /*
         var map = game.add.tilemap('state1map');
         map.addTilesetImage('Grass','grassTile');
@@ -53,7 +53,6 @@ demo.state1.prototype = {
         layer = map.createLayer('Grass');
         layer.resizeWorld();
         */
-
         bullets = game.add.group()
         bullets.createMultiple(50, 'bullet')
         bullets.setAll('checkWorldBounds', true)
