@@ -14,6 +14,11 @@ var cursors, cursorsAlt, replay, tip;
 demo.state1 = function(){};
 demo.state1.prototype = {
     preload: function(){
+        game.load.tilemap('state1map', 'assets/tilemaps/state1map.json',null,Phaser.Tilemap.TILED_JSON);
+        game.load.image('grassTile', 'assets/tilemaps/grassTile.png');
+        game.load.image('bushTile', 'assets/tilemaps/bushTile.png');
+        game.load.image('pondTile', 'assets/tilemaps/pondTile.png');
+
         game.load.image('zombie','assets/sprites/zombie.png');
         game.load.image('grass','assets/backgrounds/grass.jpg');
         game.load.image('player','assets/sprites/player.png');
@@ -36,10 +41,18 @@ demo.state1.prototype = {
         intro.play();
 
         // background
-        // TODO change to tilemap
+        //TODO change to tilemap
         var farm = game.add.sprite(0,0,'grass');
         farm.width = 1500;
         farm.height = 1000;
+        
+        /*
+        var map = game.add.tilemap('state1map');
+        map.addTilesetImage('Grass','grassTile');
+
+        layer = map.createLayer('Grass');
+        layer.resizeWorld();
+        */
 
         bullets = game.add.group()
         bullets.createMultiple(50, 'bullet')
