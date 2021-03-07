@@ -18,9 +18,14 @@ demo.state1.prototype = {
         game.load.image('replay', 'assets/buttons/replay.png');
         game.load.image('play', 'assets/buttons/play.png');
         game.load.image('pause', 'assets/buttons/pause.png');
+        game.load.image('music', 'assets/buttons/music.png');
 
         game.load.audio('intro', 'assets/audios/introMusic.mp3');
         game.load.spritesheet('zombie','assets/spritesheets/zombiesheet.png',64,64);
+
+        //Sound Effects
+        game.load.audio('zombDeath', 'assets/audios/zombieDeath.wav');
+        game.load.audio('shoot', 'assets/audios/pistol.ogg');
 
         zombiesLeft = 0;
     }, 
@@ -32,9 +37,10 @@ demo.state1.prototype = {
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         // intro music
-        intro = game.add.audio('intro', 0.5, true); // 50% volume, loop
+        intro = game.add.audio('intro', 0.4, true); // 40% volume, loop
+        zombieDeath = game.add.audio('zombDeath', 0.4);
+        shootSound = game.add.audio('shoot', 0.4);
         // TODO uncomment next line to play
-        // intro.play();
 
     
         var map = game.add.tilemap('state1map');
@@ -108,9 +114,25 @@ demo.state1.prototype = {
         }
 
         // buttons
+        intro.play();
+        mPlay = true;
+        button.music = game.add.button(20,20,'music', function(){
+            if (mPlay == false ){
+                intro.play();
+                mPlay = true;
+            }
+            else{
+                intro.stop();
+                mPlay = false;
+            }
+        
+        })
         button.replay = game.add.button(150, 100, 'replay', function() {
             currentPhase = 'PLAYING';
-            game.state.restart('state1');
+            if (mPlay == true){
+                intro.stop();
+            }
+            game.state.start('state1');
         });
         addButtonStylesTo(button.replay);
         button.replay.visible = false;
@@ -148,6 +170,7 @@ demo.state1.prototype = {
             game.physics.arcade.overlap(bullets, zombieGroup, function(b, z) {
                 b.kill();
                 z.kill();
+                zombieDeath.play();
                 zombiesLeft -= 1;
             })
 
@@ -193,12 +216,12 @@ demo.state1.prototype = {
     },
     fire: function() {
         if (game.time.now > nextFire) {
-            nextFire = game.time.now + fireRate;
-            var bullet = bullets.getFirstDead();
-            bullet.reset(player.x, player.y);
-
-            game.physics.arcade.moveToPointer(bullet, velocity.bullet);
-            bullet.rotation = game.physics.arcade.angleToPointer(bullet);
+            shootSound.play();
+            nextFire = game.time.now + fireRate
+            var bullet = bullets.getFirstDead()
+            bullet.reset(player.x, player.y)
+            game.physics.arcade.moveToPointer(bullet, velocity.bullet)
+            bullet.rotation = game.physics.arcade.angleToPointer(bullet)
         }
     },
     startAllAnimations: function() {
