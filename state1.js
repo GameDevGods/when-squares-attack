@@ -9,7 +9,7 @@ var nextFire = 0;
 var fireRate = 200;
 // define vars with no initial values here
 var zombieGroup, player, bullets, intro, zombiesLeft, zomb;
-var cursors, cursorsAlt, replay, tip;
+var cursors, cursorsAlt, replay, tip,bushlayer,pondlayer;
 
 demo.state1 = function(){};
 demo.state1.prototype = {
@@ -40,23 +40,18 @@ demo.state1.prototype = {
         // TODO uncomment next line to play
         //intro.play();
 
-        // background
-        //TODO change to tilemap
-        /*
-        var farm = game.add.sprite(0,0,'grass');
-        farm.width = 1500;
-        farm.height = 1000;
-        */
     
         var map = game.add.tilemap('state1map');
         map.addTilesetImage('grassTile');
         map.addTilesetImage('bushTile');
         map.addTilesetImage('pondTile');
 
-        layer = map.createLayer('Grass');
-        layer = map.createLayer('Bushes');
-        layer = map.createLayer('Ponds');
-        layer.resizeWorld();
+        var grasslayer = map.createLayer('Grass');
+        bushlayer = map.createLayer('Bushes');
+        pondlayer = map.createLayer('Ponds');
+
+        map.setCollisionBetween(2,20,true, 'Bushes');
+        map.setCollisionBetween(2,20,true, 'Ponds');
 
         bullets = game.add.group()
         bullets.createMultiple(50, 'bullet')
@@ -116,6 +111,7 @@ demo.state1.prototype = {
         }
     }, 
     update: function(){
+        game.physics.arcade.collide(player,[bushlayer,pondlayer]);
         // fire
         if (player.alive && game.input.activePointer.isDown) {
             this.fire()
