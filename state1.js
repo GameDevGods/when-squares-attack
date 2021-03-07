@@ -19,13 +19,13 @@ demo.state1.prototype = {
         game.load.image('bushTile', 'assets/tilemaps/bushTile.png');
         game.load.image('pondTile', 'assets/tilemaps/pondTile.png');
 
-        game.load.image('zombie','assets/sprites/zombie.png');
+        //game.load.image('zombie','assets/sprites/zombie.png');
         game.load.image('grass','assets/backgrounds/grass.jpg');
         game.load.image('player','assets/sprites/player.png');
         game.load.image('bullet','assets/sprites/bullet.png');
         game.load.image('replay', 'assets/buttons/replay.png');
         game.load.audio('intro', 'assets/audios/introMusic.mp3');
-        game.load.spritesheet('zomb','assets/spritesheets/zombiesheet.png',156,171);
+        game.load.spritesheet('zombie','assets/spritesheets/zombiesheet.png',156,171);
         
         replay = null;
         zombiesLeft = 0;
@@ -88,6 +88,9 @@ demo.state1.prototype = {
         }
         zombieGroup.setAll('anchor.y', 0.5);
         zombieGroup.setAll('anchor.x', 0.5);
+
+        zombieGroup.callAll('animations.add','animations','run',[0,1,2,3,4],10,true);
+        zombieGroup.callAll('animations.play','animations','run');
         
         // tip
         tip = game.add.text(200, 100, '', {
