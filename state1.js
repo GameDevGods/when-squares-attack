@@ -1,14 +1,5 @@
-var demo = {};
-var centerX = 1500/2;
-var centerY = 1000/2;
-// velocity
-var playerVelocity = 300;
-var bulletVelocity = 1000;
-// fire rate control
-var nextFire = 0;
-var fireRate = 200;
 // define vars with no initial values here
-var zombieGroup, player, bullets, intro, zombiesLeft, zomb;
+var zombieGroup, player, bullets, intro, zombiesLeft;
 var cursors, cursorsAlt, replay, tip,bushlayer,pondlayer;
 
 demo.state1 = function(){};
@@ -32,7 +23,7 @@ demo.state1.prototype = {
     }, 
     create: function(){
         game.physics.startSystem(Phaser.Physics.ARCADE);
-        game.world.setBounds(0,0,1000,1000);
+        game.world.setBounds(0, 0, 1500, 1000);
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         // intro music
@@ -61,11 +52,6 @@ demo.state1.prototype = {
         bullets.setAll('anchor.y', 0.5)
         bullets.setAll('scale.x', 1)
         bullets.setAll('scale.y', 1)
-        
-        //add animation zombie sprite and animate it
-        zomb = game.add.sprite(0,100,'zomb');
-        zomb.scale.setTo(.3,.3);
-        zomb.animations.add('run',[0,1,2,3]);
 
         // player: spawn randomly
         player = game.add.sprite(
@@ -96,6 +82,7 @@ demo.state1.prototype = {
         tip = game.add.text(200, 100, '', {
             font: 'Arial',
             fontSize: 32,
+            fill: '#ffffff',
         })
         tip.anchor.setTo(0, 0.5)
 
@@ -132,21 +119,17 @@ demo.state1.prototype = {
 
         // control player movements
         if (cursors.up.isDown || game.input.keyboard.isDown(cursorsAlt.up)){
-            player.body.velocity.y = -playerVelocity;
+            player.body.velocity.y = -velocity.player;
         } else if (cursors.down.isDown || game.input.keyboard.isDown(cursorsAlt.down)) {
-            player.body.velocity.y = playerVelocity;
+            player.body.velocity.y = velocity.player;
         } else {
             player.body.velocity.y = 0;
         }
 
         if (cursors.left.isDown || game.input.keyboard.isDown(cursorsAlt.left)){
-            player.body.velocity.x = -playerVelocity;
-            //game.physics.arcade.moveToObject(zomb,player,40,1000);
-            zomb.animations.play('run',20,true);
+            player.body.velocity.x = -velocity.player;
         } else if (cursors.right.isDown || game.input.keyboard.isDown(cursorsAlt.right)){
-            player.body.velocity.x = playerVelocity;
-            //game.physics.arcade.moveToObject(zomb,player,40,1000);
-            zomb.animations.play('run',20,true);
+            player.body.velocity.x = velocity.player;
         } else {
             player.body.velocity.x = 0;
         }
@@ -171,7 +154,7 @@ demo.state1.prototype = {
             var bullet = bullets.getFirstDead()
             bullet.reset(player.x, player.y)
 
-            game.physics.arcade.moveToPointer(bullet, bulletVelocity)
+            game.physics.arcade.moveToPointer(bullet, velocity.bullet)
             bullet.rotation = game.physics.arcade.angleToPointer(bullet)
         }
     }
