@@ -1,6 +1,8 @@
 // define vars with no initial values here
 var zombieGroup, player, bullets, intro, zombiesLeft;
-var cursors, cursorsAlt, replay, tip,bushlayer,pondlayer;
+var cursors, cursorsAlt, tip,bushlayer,pondlayer;
+
+var button = {}
 
 demo.state1 = function(){};
 demo.state1.prototype = {
@@ -14,14 +16,19 @@ demo.state1.prototype = {
         game.load.image('grass','assets/backgrounds/grass.jpg');
         game.load.image('player','assets/sprites/player.png');
         game.load.image('bullet','assets/sprites/bullet.png');
+
         game.load.image('replay', 'assets/buttons/replay.png');
+        game.load.image('play', 'assets/buttons/play.png');
+        game.load.image('pause', 'assets/buttons/pause.png');
+
         game.load.audio('intro', 'assets/audios/introMusic.mp3');
         game.load.spritesheet('zombie','assets/spritesheets/zombiesheet.png',64,64);
-        
-        replay = null;
+
         zombiesLeft = 0;
     }, 
     create: function(){
+        var that = this;
+
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.world.setBounds(0, 0, 1500, 1000);
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -99,53 +106,90 @@ demo.state1.prototype = {
             down: Phaser.KeyCode.S,
             right: Phaser.KeyCode.D,
         }
+
+        // buttons
+        button.replay = game.add.button(150, 100, 'replay', function() {
+            currentPhase = 'PLAYING';
+            game.state.start('state1');
+        });
+        addButtonStylesTo(button.replay);
+        button.replay.visible = false;
+
+        button.pause = game.add.button(150, 100, 'pause', function() {
+            currentPhase = 'PAUSED';
+            that.stopAllAnimations();
+            tip.text = 'Paused';
+            this.visible = false;
+        });
+        addButtonStylesTo(button.pause);
+        button.pause.visible = false;
+
+        button.play = game.add.button(150, 100, 'play', function() {
+            currentPhase = 'PLAYING';
+            that.startAllAnimations();
+            tip.text = '';
+            this.visible = false;
+        });
+        addButtonStylesTo(button.play);
+        button.play.visible = false;
     }, 
     update: function(){
-        game.physics.arcade.collide(player,[bushlayer,pondlayer]);
-        // fire
-        if (player.alive && game.input.activePointer.isDown) {
-            this.fire()
-        }
+        if (currentPhase === 'PLAYING') {
+            game.physics.arcade.collide(player,[bushlayer,pondlayer]);
+            // fire
+            if (player.alive && game.input.activePointer.isDown) {
+                this.fire()
+            }
 
-        player.rotation = game.physics.arcade.angleToPointer(player) + Math.PI / 4
+            player.rotation = game.physics.arcade.angleToPointer(player) + Math.PI / 4
 
-        // kill of player or zombies
-        game.physics.arcade.overlap(player, zombieGroup, function(p, z) { p.kill(); })
-        game.physics.arcade.overlap(bullets, zombieGroup, function(b, z) {
-            b.kill();
-            z.kill();
-            zombiesLeft -= 1;
-        })
-
-        // control player movements
-        if (cursors.up.isDown || game.input.keyboard.isDown(cursorsAlt.up)){
-            player.body.velocity.y = -velocity.player;
-        } else if (cursors.down.isDown || game.input.keyboard.isDown(cursorsAlt.down)) {
-            player.body.velocity.y = velocity.player;
-        } else {
-            player.body.velocity.y = 0;
-        }
-
-        if (cursors.left.isDown || game.input.keyboard.isDown(cursorsAlt.left)){
-            player.body.velocity.x = -velocity.player;
-        } else if (cursors.right.isDown || game.input.keyboard.isDown(cursorsAlt.right)){
-            player.body.velocity.x = velocity.player;
-        } else {
-            player.body.velocity.x = 0;
-        }
-
-        // replay button: show when all zombies are killed
-        if ((zombiesLeft === 0 || !player.alive) && !replay) {
-            replay = game.add.button(150, 100, 'replay', function() {
-                game.state.start('state1')
+            // kill of player or zombies
+            game.physics.arcade.overlap(player, zombieGroup, function(p, z) { p.kill(); })
+            game.physics.arcade.overlap(bullets, zombieGroup, function(b, z) {
+                b.kill();
+                z.kill();
+                zombiesLeft -= 1;
             })
-            replay.anchor.setTo(0.5, 0.5)
-            replay.scale.setTo(2, 2)
-            replay.onInputDown.add(tint, replay)
-            replay.onInputUp.add(untint, replay)
 
-            if (zombiesLeft === 0) tip.text = 'You killed all zombies.'
-            if (!player.alive) tip.text = 'You\'re dead.'
+            // control player movements
+            if (cursors.up.isDown || game.input.keyboard.isDown(cursorsAlt.up)){
+                player.body.velocity.y = -velocity.player;
+            } else if (cursors.down.isDown || game.input.keyboard.isDown(cursorsAlt.down)) {
+                player.body.velocity.y = velocity.player;
+            } else {
+                player.body.velocity.y = 0;
+            }
+
+            if (cursors.left.isDown || game.input.keyboard.isDown(cursorsAlt.left)){
+                player.body.velocity.x = -velocity.player;
+            } else if (cursors.right.isDown || game.input.keyboard.isDown(cursorsAlt.right)){
+                player.body.velocity.x = velocity.player;
+            } else {
+                player.body.velocity.x = 0;
+            }
+
+            if (!button.pause.visible) {
+                button.pause.visible = true;
+            }
+        }
+
+        if (currentPhase === 'PAUSED') {
+            if (!button.play.visible) {
+                button.play.visible = true;
+            }
+        }
+        
+        // replay button: show when all zombies are killed
+        if ((zombiesLeft === 0 || !player.alive) && !button.replay.visible) {
+            currentPhase = 'ENDED';
+            this.stopAllAnimations();
+
+            button.play.visible = false;
+            button.pause.visible = false;
+            button.replay.visible = true;
+
+            if (zombiesLeft === 0) tip.text = 'You killed all zombies.';
+            if (!player.alive) tip.text = 'You\'re dead.';
         }
     },
     fire: function() {
@@ -157,5 +201,12 @@ demo.state1.prototype = {
             game.physics.arcade.moveToPointer(bullet, velocity.bullet)
             bullet.rotation = game.physics.arcade.angleToPointer(bullet)
         }
+    },
+    startAllAnimations: function() {
+        zombieGroup.callAll('animations.play','animations','run');
+    },
+    stopAllAnimations: function() {
+        player.body.velocity.setTo(0, 0);
+        zombieGroup.callAll('animations.stop', 'animations', 'run');
     }
 };

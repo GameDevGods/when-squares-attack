@@ -9,7 +9,7 @@ var velocity = {
 }
 
 var currentWeapon = 'rifle';
-var current = 'START'; // INIT | PLAYING | PAUSED | ENDED
+var currentPhase = 'PLAYING'; // INIT | PLAYING | PAUSED | ENDED
 
 var nextFire = 0;
 var fireRate = 200;
