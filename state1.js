@@ -12,8 +12,6 @@ demo.state1.prototype = {
         game.load.image('bushTile', 'assets/tilemaps/bushTile.png');
         game.load.image('pondTile', 'assets/tilemaps/pondTile.png');
 
-        //game.load.image('zombie','assets/sprites/zombie.png');
-        game.load.image('grass','assets/backgrounds/grass.jpg');
         game.load.image('player','assets/sprites/player.png');
         game.load.image('bullet','assets/sprites/bullet.png');
 
@@ -67,20 +65,22 @@ demo.state1.prototype = {
         bullets.setAll('scale.y', 1)
 
         // player: spawn randomly
-        player = game.add.sprite(
-            Math.random() * 1500,
-            Math.random() * 1000,
-            'player'
-        );
+        player = game.add.sprite(CENTER_X, CENTER_Y, 'player');
         player.anchor.setTo(0.5, 0.5);
         player.enableBody = true;
         
         // zombies: spawn 10 randomly
         zombieGroup = game.add.group();
+        var coordinateExceptions = [{
+            x: CENTER_X,
+            y: CENTER_Y,
+        }];
         for (var i = 0; i < 10; i++) {
-            zombieGroup.create(
-                Math.random() * 1500,
-                Math.random() * 1000,
+            var newCoordinate = getRandCoordinateExcept(1500, 1000, 64, coordinateExceptions);
+            coordinateExceptions.push(newCoordinate);
+            var z = zombieGroup.create(
+                newCoordinate.x,
+                newCoordinate.y,
                 'zombie'
             );
             zombiesLeft += 1;
@@ -202,7 +202,6 @@ demo.state1.prototype = {
             }
         }
         
-        // replay button: show when all zombies are killed
         if ((zombiesLeft === 0 || !player.alive) && !button.replay.visible) {
             currentPhase = 'ENDED';
             this.stopAllAnimations();
