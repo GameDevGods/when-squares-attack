@@ -64,7 +64,7 @@ demo.state1.prototype = {
         bullets.setAll('scale.x', 1)
         bullets.setAll('scale.y', 1)
 
-        // player: spawn randomly
+        // player: spawn at center
         player = game.add.sprite(CENTER_X, CENTER_Y, 'player');
         player.anchor.setTo(0.5, 0.5);
         player.enableBody = true;
@@ -163,16 +163,20 @@ demo.state1.prototype = {
                 this.fire()
             }
 
-            player.rotation = game.physics.arcade.angleToPointer(player) + Math.PI / 4
+            player.rotation = game.physics.arcade.angleToPointer(player) + Math.PI / 4;
+            zombieGroup.children.forEach(z => {
+                z.rotation = game.physics.arcade.angleBetween(z, player) + Math.PI / 2;
+                game.physics.arcade.moveToObject(z, player);
+            })
 
             // kill of player or zombies
-            game.physics.arcade.overlap(player, zombieGroup, function(p, z) { p.kill(); })
+            game.physics.arcade.overlap(player, zombieGroup, function(p, z) { p.kill(); });
             game.physics.arcade.overlap(bullets, zombieGroup, function(b, z) {
                 b.kill();
                 z.kill();
                 zombieDeath.play();
                 zombiesLeft -= 1;
-            })
+            });
 
             // control player movements
             if (cursors.up.isDown || game.input.keyboard.isDown(cursorsAlt.up)){
@@ -229,6 +233,10 @@ demo.state1.prototype = {
     },
     stopAllAnimations: function() {
         player.body.velocity.setTo(0, 0);
-        zombieGroup.callAll('animations.stop', 'animations', 'run');
+        zombieGroup.children.forEach(z => {
+            z.animations.stop('run');
+            z.body.velocity.x = 0;
+            z.body.velocity.y = 0;
+        })
     }
 };
